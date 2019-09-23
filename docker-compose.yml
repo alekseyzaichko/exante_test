@@ -1,0 +1,30 @@
+version: '3.7'
+services:
+  db:
+    image: postgres:alpine
+    env_file: .env
+
+  backend:
+    build: ./backend
+    depends_on:
+      - db
+    volumes:
+       - ./backend:/app
+    entrypoint: /production.sh
+    restart: on-failure
+    env_file: .env
+
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    ports:
+      - "8000:80"
+    depends_on:
+      - backend
+    restart: on-failure
+    volumes:
+      - ./backend/static_content/media/:/media/
+      - ./backend/static_content/static/:/static/
+      - ./nginx/prod.conf:/etc/nginx/nginx.conf:ro
+    
